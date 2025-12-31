@@ -1,12 +1,13 @@
 import { PLAN_LIMITS } from './usage';
 
-export type PlanId = 'free' | 'starter' | 'pro' | 'enterprise';
+export type PlanId = 'free' | 'lite' | 'starter' | 'pro' | 'enterprise';
 
 const PLAN_HIERARCHY: Record<PlanId, number> = {
     free: 0,
-    starter: 1,
-    pro: 2,
-    enterprise: 3,
+    lite: 1,
+    starter: 2,
+    pro: 3,
+    enterprise: 4,
 };
 
 /**
@@ -46,7 +47,11 @@ export function canUseFeature(userPlan: string = 'free', feature: string): boole
         case 'white-label':
             return hasRequiredPlan(plan, 'enterprise');
         case 'multi-language':
-            return hasRequiredPlan(plan, 'starter');
+            return hasRequiredPlan(plan, 'lite'); // Enabled for Lite
+        case 'autopilot':
+            return hasRequiredPlan(plan, 'lite'); // Flagship Phase 6 feature starting from Lite
+        case 'self-healing':
+            return hasRequiredPlan(plan, 'starter'); // Advanced self-healing requires Starter
         case 'tiktok':
             return hasRequiredPlan(plan, 'pro');
         case 'unlimited-music':
@@ -65,7 +70,11 @@ export function getRequiredPlanForFeature(feature: string): PlanId {
         case 'voice-over':
         case 'background-music':
         case 'advanced-analytics':
+            return 'starter';
         case 'multi-language':
+        case 'autopilot':
+            return 'lite';
+        case 'self-healing':
             return 'starter';
         case 'ab-testing':
         case 'api-access':
@@ -102,6 +111,10 @@ export function getFeatureLockMessage(feature: string): string {
             return `API access is available on ${planName} plans and above.`;
         case 'tiktok':
             return `TikTok publishing is available on ${planName} plans and above.`;
+        case 'autopilot':
+            return `AI Autopilot is a premium feature available on ${planName} plans. Enable it to automate your entire marketing loop.`;
+        case 'self-healing':
+            return `Self-Healing strategy optimization is available on ${planName} plans and above.`;
         case 'unlimited-music':
             return `Unlimited royalty-free music is available on ${planName} plans.`;
         case 'white-label':

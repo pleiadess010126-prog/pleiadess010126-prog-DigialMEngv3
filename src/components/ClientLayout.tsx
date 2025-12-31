@@ -1,8 +1,9 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import AICopilot from '@/components/AICopilot';
+import { getAutopilotManager } from '@/lib/ai/autopilot';
 
 interface ClientLayoutProps {
     children: React.ReactNode;
@@ -10,6 +11,7 @@ interface ClientLayoutProps {
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
     const pathname = usePathname();
+    const router = useRouter();
     const { isAuthenticated, user } = useAuth();
 
     // Determine current page for context
@@ -22,8 +24,66 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         return 'home';
     };
 
-    // Only show copilot on authenticated pages (not on login, home, etc.)
+    // Only show copilot on authenticated pages
     const showCopilot = isAuthenticated && !pathname.includes('login') && !pathname.includes('signup') && pathname !== '/';
+
+    const handleAgentAction = (type: string, data?: any) => {
+        console.log('Agent Action Executing:', type, data);
+
+        // Handle common actions
+        switch (data?.actionId) {
+            case 'enable-autopilot':
+                const manager = getAutopilotManager();
+                manager.updateConfig({ enabled: true });
+                manager.start();
+                // If not on dashboard/automation, we might want to navigate
+                if (!pathname.includes('dashboard')) {
+                    router.push('/dashboard?tab=automation');
+                }
+                break;
+
+            case 'view-autopilot':
+            case 'configure-autopilot':
+                router.push('/dashboard?tab=automation');
+                break;
+
+            case 'gen-linkedin':
+            case 'gen-twitter':
+            case 'gen-instagram':
+            case 'gen-blog':
+            case 'gen-content':
+                router.push('/dashboard?tab=content');
+                break;
+
+            case 'more-analytics':
+            case 'view-analytics':
+            case 'get-insights':
+                router.push('/dashboard?tab=analytics');
+                break;
+
+            case 'view-calendar':
+                router.push('/dashboard?tab=schedule');
+                break;
+
+            case 'view-settings':
+            case 'view-profile':
+            case 'view-billing':
+            case 'get-help':
+                router.push('/dashboard?tab=settings');
+                break;
+
+            case 'get-started':
+                router.push('/dashboard?tab=overview');
+                break;
+
+            default:
+                // Handle by type if ID specific logic doesn't exist
+                if (type === 'navigate' && data?.path) {
+                    router.push(data.path);
+                }
+                break;
+        }
+    };
 
     return (
         <>
@@ -32,10 +92,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                 <AICopilot
                     currentPage={getCurrentPage()}
                     userPlan={user?.plan || 'free'}
-                    onAction={(action, data) => {
-                        console.log('Copilot action:', action, data);
-                        // Handle navigation and actions here
-                    }}
+                    onAction={handleAgentAction}
                 />
             )}
         </>

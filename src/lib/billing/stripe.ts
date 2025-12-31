@@ -4,6 +4,10 @@
 // Price IDs from Stripe Dashboard - Replace with your actual Stripe Price IDs
 // Updated December 2024 with new video/audio pricing
 export const STRIPE_PRICES = {
+    lite: {
+        monthly: 'price_lite_monthly_29',      // $29/month
+        yearly: 'price_lite_yearly_23',       // $23/month billed yearly
+    },
     starter: {
         monthly: 'price_starter_monthly_79',   // $79/month - includes 5 min video, 10K voice
         yearly: 'price_starter_yearly_63',     // $63/month billed yearly
@@ -94,14 +98,15 @@ export interface Subscription {
     id: string;
     status: SubscriptionStatus;
     priceId: string;
-    planId: 'free' | 'starter' | 'pro' | 'enterprise';
+    planId: 'free' | 'lite' | 'starter' | 'pro' | 'enterprise';
     currentPeriodStart: Date;
     currentPeriodEnd: Date;
     cancelAtPeriodEnd: boolean;
 }
 
 // Map Stripe price ID to plan ID
-export function getPlanFromPriceId(priceId: string): 'free' | 'starter' | 'pro' | 'enterprise' {
+export function getPlanFromPriceId(priceId: string): 'free' | 'lite' | 'starter' | 'pro' | 'enterprise' {
+    if (priceId.includes('lite')) return 'lite';
     if (priceId.includes('starter')) return 'starter';
     if (priceId.includes('pro')) return 'pro';
     if (priceId.includes('enterprise')) return 'enterprise';

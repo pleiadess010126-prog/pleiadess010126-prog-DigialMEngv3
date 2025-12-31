@@ -68,15 +68,39 @@ export default function InfluencerDiscovery() {
     const [influencers, setInfluencers] = useState<Influencer[]>(MOCK_INFLUENCERS);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     const categories = ['All', 'Tech & SaaS', 'Business Automation', 'Artificial Intelligence', 'Lifestyle', 'E-commerce'];
+
+    // Filter influencers based on search term, category, and platform
+    const filteredInfluencers = influencers.filter((inf) => {
+        // Search filter - check name, handle, category, and location
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = searchTerm === '' ||
+            inf.name.toLowerCase().includes(searchLower) ||
+            inf.handle.toLowerCase().includes(searchLower) ||
+            inf.category.toLowerCase().includes(searchLower) ||
+            inf.location.toLowerCase().includes(searchLower);
+
+        // Category filter
+        const matchesCategory = selectedCategory === 'All' || inf.category === selectedCategory;
+
+        // Platform filter
+        const matchesPlatform = selectedPlatform === null || inf.platform === selectedPlatform;
+
+        return matchesSearch && matchesCategory && matchesPlatform;
+    });
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         // Simulate API delay
-        setTimeout(() => setLoading(false), 800);
+        setTimeout(() => setLoading(false), 500);
+    };
+
+    const togglePlatformFilter = (platform: string) => {
+        setSelectedPlatform(prev => prev === platform ? null : platform);
     };
 
     return (
@@ -119,13 +143,22 @@ export default function InfluencerDiscovery() {
 
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex gap-2 mr-4">
-                        <button className="p-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-fuchsia-500 transition-all">
+                        <button
+                            onClick={() => togglePlatformFilter('instagram')}
+                            className={`p-2 rounded-lg border transition-all ${selectedPlatform === 'instagram' ? 'bg-pink-100 border-pink-500' : 'bg-slate-50 border-slate-200 hover:border-fuchsia-500'}`}
+                        >
                             <Instagram className="w-4 h-4 text-pink-600" />
                         </button>
-                        <button className="p-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-red-500 transition-all">
+                        <button
+                            onClick={() => togglePlatformFilter('youtube')}
+                            className={`p-2 rounded-lg border transition-all ${selectedPlatform === 'youtube' ? 'bg-red-100 border-red-500' : 'bg-slate-50 border-slate-200 hover:border-red-500'}`}
+                        >
                             <Youtube className="w-4 h-4 text-red-600" />
                         </button>
-                        <button className="p-2 rounded-lg bg-slate-50 border border-slate-200 hover:border-blue-400 transition-all">
+                        <button
+                            onClick={() => togglePlatformFilter('twitter')}
+                            className={`p-2 rounded-lg border transition-all ${selectedPlatform === 'twitter' ? 'bg-blue-100 border-blue-400' : 'bg-slate-50 border-slate-200 hover:border-blue-400'}`}
+                        >
                             <Twitter className="w-4 h-4 text-blue-400" />
                         </button>
                     </div>
@@ -137,8 +170,8 @@ export default function InfluencerDiscovery() {
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${selectedCategory === cat
-                                    ? 'bg-fuchsia-100 text-fuchsia-700 border-2 border-fuchsia-200'
-                                    : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border-2 border-transparent'
+                                ? 'bg-fuchsia-100 text-fuchsia-700 border-2 border-fuchsia-200'
+                                : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border-2 border-transparent'
                                 }`}
                         >
                             {cat}
@@ -187,8 +220,24 @@ export default function InfluencerDiscovery() {
                             </div>
                         </div>
                     ))
+                ) : filteredInfluencers.length === 0 ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                        <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                            <Search className="w-10 h-10 text-slate-300" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-600 mb-2">No influencers found</h3>
+                        <p className="text-slate-400 max-w-md">
+                            Try adjusting your search terms, category, or platform filters to find more creators.
+                        </p>
+                        <button
+                            onClick={() => { setSearchTerm(''); setSelectedCategory('All'); setSelectedPlatform(null); }}
+                            className="mt-4 px-6 py-2 bg-fuchsia-100 text-fuchsia-600 rounded-xl font-semibold hover:bg-fuchsia-200 transition-all"
+                        >
+                            Clear all filters
+                        </button>
+                    </div>
                 ) : (
-                    influencers.map((inf) => (
+                    filteredInfluencers.map((inf) => (
                         <div key={inf.id} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden relative">
                             {/* Platform Icon Overlay */}
                             <div className="absolute top-4 right-4">

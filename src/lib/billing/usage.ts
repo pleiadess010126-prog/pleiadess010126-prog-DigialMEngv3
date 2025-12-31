@@ -46,6 +46,15 @@ export const PLAN_LIMITS: Record<string, UsageLimits> = {
         musicTracks: 0,            // No music on free
         aiImages: 5,               // 5 free AI images to try
     },
+    lite: {
+        contentPerMonth: 40,
+        platforms: 2,
+        apiCalls: 500,
+        videoMinutes: 0,
+        voiceOverCharacters: 2000,
+        musicTracks: 2,
+        aiImages: 15,
+    },
     starter: {
         contentPerMonth: 100,
         platforms: 3,
