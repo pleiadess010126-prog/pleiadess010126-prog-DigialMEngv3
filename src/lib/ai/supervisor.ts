@@ -2,7 +2,7 @@
 import { generateContent, GenerateContentParams } from './contentGenerator';
 import type { TopicPillar, ContentItem } from '@/types';
 
-export type WorkerType = 'seo-worker' | 'social-worker' | 'risk-worker' | 'trend-sentry' | 'agent-debate';
+export type WorkerType = 'seo-worker' | 'social-worker' | 'risk-worker' | 'trend-sentry' | 'agent-debate' | 'geo-worker';
 
 export interface Task {
     id: string;
@@ -39,6 +39,7 @@ export class SupervisorAgent {
         this.workers.set('social-worker', new SocialWorker());
         this.workers.set('risk-worker', new RiskWorker());
         this.workers.set('trend-sentry', new TrendSentryWorker());
+        this.workers.set('geo-worker', new GEOWorker());
     }
 
     /**
@@ -399,6 +400,54 @@ class TrendSentryWorker extends WorkerAgent {
         };
     }
 }
+
+/**
+ * GEO Worker - Specializes in Generative Engine Optimization
+ * Uses advanced 8-metric analysis for AI search engine optimization
+ */
+class GEOWorker extends WorkerAgent {
+    name = 'GEO Specialist';
+    type: WorkerType = 'geo-worker';
+
+    async execute(payload: GenerateContentParams): Promise<ContentItem> {
+        console.log(`🌐 ${this.name}: Optimizing content for AI Search Engines (GEO) for "${payload.topic}"`);
+
+        // Force GEO enabled
+        const geoPayload = { ...payload, enableGEO: true };
+
+        // Generate content using AI with GEO optimization
+        const generated = await generateContent(geoPayload);
+
+        // Create content item with enhanced GEO data
+        const contentItem: ContentItem = {
+            id: `content-geo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            title: generated.title,
+            type: payload.contentType,
+            status: 'pending',
+            content: generated.content,
+            metadata: {
+                ...generated.metadata,
+                seoScore: generated.seoScore,
+                geoScore: generated.geoScore,
+                geoGrade: generated.geoGrade,
+                geoBreakdown: generated.geoBreakdown,
+                geoRecommendations: generated.geoRecommendations,
+                geoStrengths: generated.geoStrengths,
+            },
+            createdAt: new Date(),
+        };
+
+        const gradeDisplay = generated.geoGrade ? ` (Grade: ${generated.geoGrade})` : '';
+        console.log(`✅ ${this.name}: GEO Content created with score ${generated.geoScore}/100${gradeDisplay}`);
+
+        if (generated.geoRecommendations && generated.geoRecommendations.length > 0) {
+            console.log(`   📋 Recommendations: ${generated.geoRecommendations.length} suggestions for improvement`);
+        }
+
+        return contentItem;
+    }
+}
+
 
 // Singleton instance
 let supervisorInstance: SupervisorAgent | null = null;

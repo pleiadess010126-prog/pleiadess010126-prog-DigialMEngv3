@@ -103,9 +103,23 @@ export interface ContentItem {
     topicPillar: string;
     targetKeyword?: string;
     seoScore: number;
+    geoScore?: number; // Generative Engine Optimization score (0-100)
+    geoGrade?: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F'; // GEO grade
     wordCount?: number;
     hashtags?: string[];
     estimatedReadTime?: number;
+    geoBreakdown?: {
+      directness: number;      // 0-100: How directly content answers queries
+      authority: number;       // 0-100: Citations, data, expert references
+      structure: number;       // 0-100: Formatting for AI parsing
+      conversational: number;  // 0-100: Natural dialogue flow
+      freshness: number;       // 0-100: Timeliness signals
+      snippetOptimization: number; // 0-100: Featured snippet readiness
+      semanticRichness: number;    // 0-100: Entity and concept density
+      readability: number;     // 0-100: Ease of comprehension
+    };
+    geoRecommendations?: string[]; // Improvement suggestions
+    geoStrengths?: string[];       // What's working well
   };
   performance?: {
     views: number;
@@ -136,7 +150,7 @@ export interface RiskAlert {
 export interface AIAgent {
   id: string;
   name: string;
-  type: 'supervisor' | 'seo-worker' | 'social-worker' | 'risk-worker' | 'video-worker' | 'analytics-worker';
+  type: 'supervisor' | 'seo-worker' | 'social-worker' | 'risk-worker' | 'video-worker' | 'analytics-worker' | 'geo-worker';
   status: 'idle' | 'working' | 'error';
   lastActive: Date;
   tasksCompleted: number;

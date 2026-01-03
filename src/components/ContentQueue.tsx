@@ -64,10 +64,35 @@ export default function ContentQueue({ items, onApprove, onReject }: ContentQueu
                                                     <span>•</span>
                                                     <span className="font-medium">SEO: {item.metadata.seoScore}/100</span>
                                                     <span>•</span>
-                                                    <span className="flex items-center gap-1 font-bold text-violet-600">
-                                                        <Sparkles className="w-3 h-3 fill-violet-600/20" />
-                                                        Oracle Score: {Math.floor(75 + Math.random() * 23)}/100
-                                                    </span>
+                                                    {item.metadata.geoScore ? (
+                                                        <span className="flex items-center gap-1 font-bold text-amber-500" title={`GEO Analysis (Grade: ${item.metadata.geoGrade || 'N/A'}):
+• Directness: ${item.metadata.geoBreakdown?.directness ?? 'N/A'}%
+• Authority: ${item.metadata.geoBreakdown?.authority ?? 'N/A'}%  
+• Structure: ${item.metadata.geoBreakdown?.structure ?? 'N/A'}%
+• Conversational: ${item.metadata.geoBreakdown?.conversational ?? 'N/A'}%
+• Freshness: ${item.metadata.geoBreakdown?.freshness ?? 'N/A'}%
+• Snippet Opt: ${item.metadata.geoBreakdown?.snippetOptimization ?? 'N/A'}%
+• Semantic: ${item.metadata.geoBreakdown?.semanticRichness ?? 'N/A'}%
+• Readability: ${item.metadata.geoBreakdown?.readability ?? 'N/A'}%`}>
+                                                            <Sparkles className="w-3 h-3 fill-amber-500/20" />
+                                                            GEO: {item.metadata.geoScore}/100
+                                                            {item.metadata.geoGrade && (
+                                                                <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] ${item.metadata.geoGrade === 'A+' || item.metadata.geoGrade === 'A'
+                                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                                        : item.metadata.geoGrade === 'B'
+                                                                            ? 'bg-blue-100 text-blue-700'
+                                                                            : 'bg-amber-100 text-amber-700'
+                                                                    }`}>
+                                                                    {item.metadata.geoGrade}
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-1 font-bold text-violet-600">
+                                                            <Sparkles className="w-3 h-3 fill-violet-600/20" />
+                                                            Oracle Score: {Math.floor(75 + Math.random() * 23)}/100
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
 

@@ -196,7 +196,7 @@ export default function PricingPage() {
 
             const session = await createCheckoutSession({
                 priceId,
-                customerId: user?.stripeCustomerId,
+                customerId: (user as { stripeCustomerId?: string })?.stripeCustomerId,
                 successUrl: `${window.location.origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
                 cancelUrl: `${window.location.origin}/pricing`,
                 metadata: {

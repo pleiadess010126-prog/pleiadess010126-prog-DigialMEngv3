@@ -28,7 +28,7 @@ export default function UsageDisplay() {
         try {
             // In a real app, this would come from the user's record
             // For demo, we use a placeholder or handle the mock case
-            const customerId = user?.stripeCustomerId || 'cus_demo_123';
+            const customerId = (user as { stripeCustomerId?: string })?.stripeCustomerId || 'cus_demo_123';
 
             const response = await fetch('/api/stripe/create-portal-session', {
                 method: 'POST',

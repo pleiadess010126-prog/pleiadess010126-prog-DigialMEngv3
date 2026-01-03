@@ -104,6 +104,13 @@ export default function ContentPreviewModal({
                         <span className="text-sm text-slate-600">SEO Score:</span>
                         <span className="text-sm font-bold text-emerald-600">{editedContent.metadata.seoScore}/100</span>
                     </div>
+                    {editedContent.metadata.geoScore && (
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-amber-500" />
+                            <span className="text-sm text-slate-600">GEO Score:</span>
+                            <span className="text-sm font-bold text-amber-500">{editedContent.metadata.geoScore}/100</span>
+                        </div>
+                    )}
                     {editedContent.metadata.wordCount && (
                         <div className="flex items-center gap-2">
                             <FileText className="w-4 h-4 text-blue-600" />
@@ -117,6 +124,92 @@ export default function ContentPreviewModal({
                         <span className="text-sm font-bold text-violet-600">{editedContent.metadata.topicPillar}</span>
                     </div>
                 </div>
+
+                {/* Enhanced GEO Analysis Panel */}
+                {editedContent.metadata.geoBreakdown && (
+                    <div className="px-6 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
+                        {/* GEO Grade Badge */}
+                        {editedContent.metadata.geoGrade && (
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${editedContent.metadata.geoGrade === 'A+' || editedContent.metadata.geoGrade === 'A'
+                                        ? 'bg-emerald-100 text-emerald-700'
+                                        : editedContent.metadata.geoGrade === 'B'
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : editedContent.metadata.geoGrade === 'C'
+                                                ? 'bg-amber-100 text-amber-700'
+                                                : 'bg-red-100 text-red-700'
+                                    }`}>
+                                    GEO Grade: {editedContent.metadata.geoGrade}
+                                </span>
+                                <span className="text-xs text-slate-500">Optimized for AI Search Engines</span>
+                            </div>
+                        )}
+
+                        {/* 8-Metric Grid */}
+                        <div className="grid grid-cols-4 gap-3 mb-3">
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-amber-700 tracking-wider">Directness</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.directness}%</div>
+                            </div>
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-amber-700 tracking-wider">Authority</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.authority}%</div>
+                            </div>
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-amber-700 tracking-wider">Structure</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.structure}%</div>
+                            </div>
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-amber-700 tracking-wider">Conversational</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.conversational}%</div>
+                            </div>
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-orange-700 tracking-wider">Freshness</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.freshness}%</div>
+                            </div>
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-orange-700 tracking-wider">Snippet Opt</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.snippetOptimization}%</div>
+                            </div>
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-orange-700 tracking-wider">Semantic</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.semanticRichness}%</div>
+                            </div>
+                            <div className="bg-white/60 rounded-lg p-2 text-center">
+                                <div className="text-[10px] uppercase font-bold text-orange-700 tracking-wider">Readability</div>
+                                <div className="text-lg font-bold text-slate-900">{editedContent.metadata.geoBreakdown.readability}%</div>
+                            </div>
+                        </div>
+
+                        {/* Strengths */}
+                        {editedContent.metadata.geoStrengths && editedContent.metadata.geoStrengths.length > 0 && (
+                            <div className="mb-2">
+                                <div className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider mb-1">Strengths</div>
+                                <div className="flex flex-wrap gap-1">
+                                    {editedContent.metadata.geoStrengths.slice(0, 4).map((strength: string, idx: number) => (
+                                        <span key={idx} className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px]">
+                                            {strength.replace('✓ ', '')}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Recommendations */}
+                        {editedContent.metadata.geoRecommendations && editedContent.metadata.geoRecommendations.length > 0 && (
+                            <div>
+                                <div className="text-[10px] uppercase font-bold text-amber-700 tracking-wider mb-1">Recommendations</div>
+                                <div className="flex flex-wrap gap-1">
+                                    {editedContent.metadata.geoRecommendations.slice(0, 3).map((rec: string, idx: number) => (
+                                        <span key={idx} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px]">
+                                            {rec.replace('→ ', '')}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6">

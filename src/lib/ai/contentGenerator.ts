@@ -1,10 +1,12 @@
 // AI Content Generator - Supports Multiple AI Providers
 // Priority: AWS Bedrock → OpenAI → Anthropic → Mock
 // Multi-Language Support: 20+ languages for global content creation
+// Enhanced GEO (Generative Engine Optimization) Support
 
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { analyzeGEO, GEOBreakdown, GEOAnalysis } from './geoScoring';
 
 export type AIProvider = 'bedrock' | 'openai' | 'anthropic' | 'mock';
 
@@ -56,6 +58,7 @@ export interface GenerateContentParams {
     length?: 'short' | 'medium' | 'long';
     language?: ContentLanguage;  // Primary language for content generation
     additionalLanguages?: ContentLanguage[];  // Auto-translate to these languages
+    enableGEO?: boolean; // Enable Generative Engine Optimization
 }
 
 export interface GeneratedContent {
@@ -63,6 +66,20 @@ export interface GeneratedContent {
     content: string;
     excerpt: string;
     seoScore: number;
+    geoScore?: number;
+    geoGrade?: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+    geoBreakdown?: {
+        directness: number;
+        authority: number;
+        structure: number;
+        conversational: number;
+        freshness: number;
+        snippetOptimization: number;
+        semanticRichness: number;
+        readability: number;
+    };
+    geoRecommendations?: string[];
+    geoStrengths?: string[];
     language: ContentLanguage;  // Language of this content
     metadata: {
         topicPillar: string;
@@ -220,25 +237,45 @@ function generateMockContent(params: GenerateContentParams): GeneratedContent {
         'facebook-story': `${mockTitles['facebook-story']}\n\nSwipe up to learn about:\n${keywords.slice(0, 2).map(k => `→ ${k}`).join('\n')}\n\n👆 Tap to discover more!`,
     };
 
+    const contentText = mockContent[contentType];
+
+    // Use advanced GEO analysis if enabled
+    let geoData: {
+        geoScore?: number;
+        geoGrade?: GeneratedContent['geoGrade'];
+        geoBreakdown?: GeneratedContent['geoBreakdown'];
+        geoRecommendations?: string[];
+        geoStrengths?: string[];
+    } = {};
+
+    if (params.enableGEO) {
+        const geoAnalysis = analyzeGEO(contentText);
+        geoData = {
+            geoScore: geoAnalysis.score,
+            geoGrade: geoAnalysis.grade,
+            geoBreakdown: geoAnalysis.breakdown,
+            geoRecommendations: geoAnalysis.recommendations,
+            geoStrengths: geoAnalysis.strengths,
+        };
+    }
+
     return {
         title: mockTitles[contentType],
-        content: mockContent[contentType],
+        content: contentText,
         excerpt: `Learn about ${topic} with focus on ${keywords.slice(0, 2).join(' and ')}.`,
         seoScore: Math.floor(Math.random() * 20) + 75, // 75-95
+        ...geoData,
         language: params.language || 'en',
         metadata: {
             topicPillar: topic,
             keywords,
             hashtags: keywords.map(k => `#${k.replace(/\s+/g, '')}`),
-            estimatedReadTime: contentType === 'blog' ? Math.ceil(mockContent[contentType].split(' ').length / 200) : undefined,
-            wordCount: mockContent[contentType].split(' ').length,
+            estimatedReadTime: contentType === 'blog' ? Math.ceil(contentText.split(' ').length / 200) : undefined,
+            wordCount: contentText.split(' ').length,
         },
     };
 }
 
-/**
- * Build prompt for AI models
- */
 function buildPrompt(params: GenerateContentParams): string {
     const { topic, keywords, contentType, targetAudience, tone = 'professional', length = 'medium', language = 'en' } = params;
 
@@ -255,6 +292,16 @@ function buildPrompt(params: GenerateContentParams): string {
         ? `\n\nIMPORTANT: Write the ENTIRE content in ${langInfo.name} (${langInfo.nativeName}). All text, headings, and hashtags must be in ${langInfo.name}. Do not write in English.`
         : '';
 
+    // GEO-specific requirements
+    const geoRequirements = params.enableGEO ? `
+GEO (Generative Engine Optimization) REQUIREMENTS:
+1. DIRECT ANSWER: Start the content with a concise, direct answer to the user's implicit question.
+2. CITATIONS: Reference authoritative sources or use "According to industry data..." or "Experts suggest..." where applicable.
+3. STRUCTURED DATA: Use bullet points, bold text for key terms, and clear headings to help AI agents parse the info.
+4. CONVERSATIONAL FLOW: Write in a way that feels like a dialogue between an expert and an AI assistant.
+5. NO FLUFF: Eliminate filler words. Every sentence must add unique value.
+` : '';
+
     return `Create ${contentSpecs[contentType]} about "${topic}" for ${targetAudience}.${languageInstruction}
 
 REQUIREMENTS:
@@ -263,6 +310,7 @@ REQUIREMENTS:
 - Keywords to include naturally: ${keywords.join(', ')}
 - SEO-optimized with E-E-A-T principles
 - Include AI disclosure in ${langInfo.name}: "Generated with AI assistance and reviewed by human editors for E-E-A-T compliance."
+${geoRequirements}
 
 ${contentType === 'blog' ? 'Format in Markdown with proper headings.' : ''}
 ${contentType !== 'blog' ? `Include 5-7 relevant hashtags (from: ${keywords.map(k => '#' + k.replace(/\s+/g, '')).join(', ')})` : ''}
@@ -291,11 +339,32 @@ function parseGeneratedContent(text: string, params: GenerateContentParams): Gen
     const hasHashtags = hashtags.length > 0;
     const seoScore = (hasKeywords ? 40 : 0) + (hasGoodLength ? 40 : 0) + (hasHashtags ? 20 : 0);
 
+    // Calculate GEO Score using advanced analysis if enabled
+    let geoData: {
+        geoScore?: number;
+        geoGrade?: GeneratedContent['geoGrade'];
+        geoBreakdown?: GeneratedContent['geoBreakdown'];
+        geoRecommendations?: string[];
+        geoStrengths?: string[];
+    } = {};
+
+    if (params.enableGEO) {
+        const geoAnalysis = analyzeGEO(text);
+        geoData = {
+            geoScore: geoAnalysis.score,
+            geoGrade: geoAnalysis.grade,
+            geoBreakdown: geoAnalysis.breakdown,
+            geoRecommendations: geoAnalysis.recommendations,
+            geoStrengths: geoAnalysis.strengths,
+        };
+    }
+
     return {
         title: title.replace(/^#+\s*/, '').trim(),
         content: text.trim(),
         excerpt: text.split('\n').find(line => line.length > 50)?.substring(0, 150) + '...' || title,
         seoScore: Math.min(95, Math.max(60, seoScore)),
+        ...geoData,
         language: params.language || 'en',
         metadata: {
             topicPillar: params.topic,

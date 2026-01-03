@@ -66,7 +66,7 @@ import {
     LayoutDashboard, FileText, BarChart3, Settings, Bot,
     Youtube, Instagram, Facebook, Globe, ArrowUpRight, ArrowDownRight, Eye, LogOut, User, Users, Bell, Search, ChevronDown,
     Video, Languages, Clock, FlaskConical, Link2, Building2, Shield, CreditCard, Wrench,
-    Scissors, Hash, Target, CheckCircle2, ImageIcon, Wand2, Repeat2, Swords, MessageSquare, Gift
+    Scissors, Hash, Target, CheckCircle2, ImageIcon, Wand2, Repeat2, Swords, MessageSquare, Gift, Crown
 } from 'lucide-react';
 import type { ContentItem, Campaign } from '@/types';
 
